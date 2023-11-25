@@ -11,6 +11,23 @@
 
 </template>
 
+<script>
+
+    console.log("first");
+    var caca = "something";
+
+</script>
+
+<script lang="coffee" defer="true">
+
+    fill = (container, liquid = "coffee") ->
+        "Filling the #{container} with #{liquid}..."
+
+    console.log(fill("a", "b"));
+
+    console.log("defer");
+</script>
+
 <config>
 {
     "head": [

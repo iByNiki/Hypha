@@ -4,6 +4,7 @@ import re
 import json
 import cssutils
 from hypha.core.structures import *
+import dukpy
 
 # TODO: CSS, scripts and config
 
@@ -148,22 +149,51 @@ class PageBuilder(object):
                     selector._setSelectorText(newText)
 
         return sheet.cssText.decode("utf-8")
+    
+    def parseJS(self, scriptTag):
+        attrs = scriptTag.attrs
+        lang = JSLang.VANILLA
+        code = ""
+        defer = ("defer" in attrs)
+
+        if ("lang" in attrs):
+            for key in JSLang:
+                for name in key.value:
+                    if (name.lower() == attrs["lang"].lower()):
+                        lang = key
+        
+        if (lang == JSLang.VANILLA):
+            code = scriptTag.string
+        elif (lang == JSLang.TYPESCRIPT):
+            code = dukpy.typescript_compile(scriptTag.string)
+        elif (lang == JSLang.COFFEE):
+            code = dukpy.coffee_compile(scriptTag.string)
+        elif (lang == JSLang.BABEL):
+            code = dukpy.babel_compile(scriptTag.string)
+
+        return Script(lang=lang, code=code, defer=defer)
+    
+        # TODO: Render JS
 
     def buildSingleComponent(self, soup, name):
         templateElem = soup.find("template")
         styleElem = soup.find("style")
         configElem = soup.find("config")
+        scriptElems = soup.find_all("script")
 
         component = Component(name)
 
         scopePrefix = "c" + str(len(self.components))
+
+        for scriptElem in scriptElems:
+            component.scripts.append(self.parseJS(scriptElem))
 
         if (styleElem != None):
             component.css = self.parseCss(styleElem, scopePrefix)
 
         if (templateElem != None):
             component.content, component.requiredComponents = self.parseTemplate(templateElem, scopePrefix, parentComponent=name)
-        
+
         return component
 
 
@@ -187,10 +217,14 @@ class PageBuilder(object):
         templateElem = soup.find("template")
         styleElem = soup.find("style")
         configElem = soup.find("config")
+        scriptElems = soup.find_all("script")
 
         layout = Layout(name)
 
         scopePrefix = "l" + str(len(self.layouts))
+
+        for scriptElem in scriptElems:
+            layout.scripts.append(self.parseJS(scriptElem))
 
         if (styleElem != None):
             layout.css = self.parseCss(styleElem, scopePrefix)
@@ -212,10 +246,14 @@ class PageBuilder(object):
         templateElem = soup.find("template")
         styleElem = soup.find("style")
         configElem = soup.find("config")
+        scriptElems = soup.find_all("script")
 
         page = Page(name)
 
         scopePrefix = "p" + str(len(self.pages))
+
+        for scriptElem in scriptElems:
+            page.scripts.append(self.parseJS(scriptElem))
 
         if (styleElem != None):
             page.css = self.parseCss(styleElem, scopePrefix)

@@ -1,3 +1,4 @@
 beautifulsoup4>=4.12.2
 cssutils>=2.9.0
 argparse>=1.4.0
+dukpy>=0.3.0

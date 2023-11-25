@@ -4,6 +4,12 @@
     </HyphaLink>
 </template>
 
+<script>
+
+
+
+</script>
+
 <style scoped="true">
     .button {
 
