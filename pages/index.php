@@ -1,40 +1,71 @@
 <template>
-    <a>Index.php</a>
-    <Button to="/test">Nothing</Button>
-    <Text text="lol"/>
 
-    <HyphaLink to="/search">
-        GOTO SEARCH!!!
-    </HyphaLink>
+    <RadialGradient/>
 
-    <p>caca = {{caca}}</p>
+    <div class="content">
+
+        <div class="title-wrap">
+            <Title/>
+        </div>
+
+        <div class="buttons">
+            <IconButton icon="github" to="https://github.com/iByNiki/Hypha">GitHub</IconButton>
+            <!-- More buttons soon -->
+        </div>
+
+    </div>
+
+    <span class="credits">Made with <i class="bi bi-music-note"></i> by <a href="https://niki.cat">Niki</a></span>
 
 </template>
 
-<script>
+<style scoped="true">
 
-    console.log("first");
-    var caca = "something";
+.content {
 
-</script>
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 
-<script lang="coffee" defer="true">
+    width: 100svw;
+    height: 100svh;
 
-    fill = (container, liquid = "coffee") ->
-        "Filling the #{container} with #{liquid}..."
-
-    console.log(fill("a", "b"));
-
-    console.log("defer");
-</script>
-
-<config>
-{
-    "head": [
-        {
-            "type": "title",
-            "inner": "Homepage"
-        }
-    ]
 }
-</config>
+
+.title-wrap {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: var(--color-secondary);
+    width: 10em;
+    height: 3.5em;
+
+    margin-bottom: 2em;
+    padding-inline: .5em;
+
+}
+
+.credits {
+
+    position: absolute;
+    
+    left: .5em;
+    bottom: .5em;
+
+    filter: opacity(75%);
+
+}
+
+.credits > i, a {
+    color: var(--color-primary);
+}
+
+body, html {
+    background: none;
+    overflow: hidden;
+}
+
+</style>

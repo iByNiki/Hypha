@@ -55,8 +55,9 @@ def build():
 
     makePath("tmp")
 
-    shutil.copytree("public", "tmp/public", dirs_exist_ok=True)
     shutil.copytree("hypha/default", "tmp", dirs_exist_ok=True)
+    shutil.copytree("public", "tmp/public", dirs_exist_ok=True)
+    shutil.copytree("scripts", "tmp/public/hjs/scripts", dirs_exist_ok=True)
 
     log("Rendering pages...")
     pageRenderer = PageRenderer("tmp", pageBuilder)

@@ -1,0 +1,35 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css");
+
+:root {
+
+    --color-background: #050109;
+    --color-text: #F9DAD2;
+    --color-primary: #1891AF;
+    --color-secondary: #061027;
+    --color-accent: orange;
+    --color-gray: #1F4667;
+
+    --font-stack: "Hypha","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;
+
+}
+
+@font-face {
+    font-family: Hypha;
+    font-weight: 400 800;
+    font-display: block;
+    src: url(font.woff2) format("woff2")
+}
+
+html, body {
+
+    margin: 0;
+    padding: 0;
+
+    background-color: var(--color-background);
+
+}
+
+* {
+    color: var(--color-text);
+    font-family: var(--font-stack);
+}

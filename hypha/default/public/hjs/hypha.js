@@ -113,3 +113,5 @@ function hyphaInit() {
     hypha.injectListeners();
 
 }
+
+function require(text) {} // Dummy function

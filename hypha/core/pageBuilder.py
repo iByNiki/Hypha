@@ -91,9 +91,8 @@ class PageBuilder(object):
                         newContent = newContent.replace(varMatch, matchReplace)
 
                 elemInner = builder.getInnerHTML(elem)
-                processedSlot, temp = self.parseTemplate(BeautifulSoup("<xml>" + elemInner + "</xml>", "xml"), scopePrefix)
-                processedSlot = processedSlot.replace("<xml>", "").replace("</xml>", "")
-                newContent = newContent.replace("<slot/>", processedSlot).replace("<slot />", processedSlot)
+                processedSlot, temp = self.parseTemplate(BeautifulSoup(elemInner, "html.parser"), scopePrefix)
+                newContent = newContent.replace("<slot></slot>", processedSlot)
 
                 innerHTML = innerHTML.replace(str(elem), newContent)
 
@@ -125,6 +124,8 @@ class PageBuilder(object):
 
             innerHTML = innerHTML.replace(match, component.content)"""
 
+        innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
+
         return innerHTML, foundComponents
 
     def parseCss(self, style, scopePrefix):
@@ -155,23 +156,28 @@ class PageBuilder(object):
         lang = JSLang.VANILLA
         code = ""
         defer = ("defer" in attrs)
+        bundle = True
+
+        if ("bundle" in attrs):
+            if (attrs["bundle"].lower() == "false" or attrs["bundle"].lower() == "f"):
+                bundle = False
 
         if ("lang" in attrs):
             for key in JSLang:
                 for name in key.value:
                     if (name.lower() == attrs["lang"].lower()):
                         lang = key
+
+        requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
         
         if (lang == JSLang.VANILLA):
             code = scriptTag.string
-        elif (lang == JSLang.TYPESCRIPT):
-            code = dukpy.typescript_compile(scriptTag.string)
         elif (lang == JSLang.COFFEE):
             code = dukpy.coffee_compile(scriptTag.string)
         elif (lang == JSLang.BABEL):
-            code = dukpy.babel_compile(scriptTag.string)
+            code = dukpy.babel_compile(scriptTag.string)["code"]
 
-        return Script(lang=lang, code=code, defer=defer)
+        return Script(lang=lang, code=code, defer=defer, bundle=bundle, requires=requires)
     
         # TODO: Render JS
 
@@ -267,7 +273,7 @@ class PageBuilder(object):
 
             if ("layout" in page.config):
                 layoutName = page.config["layout"]
-                if (layoutName != "none"):
+                if (layoutName.lower() != "none"):
                     if (layoutName not in self.layouts):
                         raise Exception("Layout " + str(layoutName) + " not found. Error in page " + str(name))
                     page.layout = layoutName

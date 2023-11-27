@@ -15,7 +15,7 @@ import socket
 import hashlib
 import base64
 
-PHP_URL_WIN = "https://windows.php.net/downloads/releases/php-8.3.0-Win32-vs16-x64.zip"
+PHP_URL_WIN = "https://windows.php.net/downloads/releases/php-8.0.30-nts-Win32-vs16-x64.zip"
 OS_TYPE = None
 
 PORT = 80
