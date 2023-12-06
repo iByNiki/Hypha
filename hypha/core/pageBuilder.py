@@ -1,5 +1,5 @@
 import hypha.core.builder as builder
-import hypha.core.builder as parser
+import hypha.core.parser as parser
 from hypha.core.structures import *
 from bs4 import BeautifulSoup
 import re
