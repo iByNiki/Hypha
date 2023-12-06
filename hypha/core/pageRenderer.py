@@ -86,6 +86,8 @@ class PageRenderer(object):
         deferredJs = ""
         jsLangDeps = []
 
+        requiredComponents = page.requiredComponents
+
         # TODO: Recursive JS Load
 
         if (page.layout != None):
@@ -93,12 +95,14 @@ class PageRenderer(object):
             for script in layout.scripts:
                 if (script.bundle): bundled.append(script)
                 else: notBundled.append(script)
+            
+            requiredComponents += layout.requiredComponents
 
         for script in page.scripts:
             if (script.bundle): bundled.append(script)
             else: notBundled.append(script)
 
-        for component in page.requiredComponents:
+        for component in requiredComponents:
             for script in self.pageBuilder.components[component].scripts:
                 if (script.bundle): bundled.append(script)
                 else: notBundled.append(script)

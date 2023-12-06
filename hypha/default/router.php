@@ -47,7 +47,7 @@ class Router {
             }
 
             header("Content-type: " . $contentType);
-            include($publicPath);
+            readfile($publicPath);
             exit();
         }
 

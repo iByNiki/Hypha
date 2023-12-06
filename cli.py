@@ -48,7 +48,7 @@ def downloadPHP():
         z.extractall("hypha/php")
 
 def phpServerCommand(osType, port, silent):
-    cmdArgs = "-S 127.0.0.1:" + str(port) + " build/routes.php -t build"
+    cmdArgs = "-S 0.0.0.0:" + str(port) + " build/routes.php -t build"
     if (osType == "lin"):
         fullCmd = ["hypha/php/php.exe"] + cmdArgs.split()
     else:

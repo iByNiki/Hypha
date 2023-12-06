@@ -21,6 +21,7 @@ $fileTypes = [
 
     "woff" => "font/woff",
     "woff2" => "font/woff2",
+    "ttf" => "font/ttf",
 
     "ico" => "image/vnd.microsoft.icon",
     "png" => "image/png",

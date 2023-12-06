@@ -29,7 +29,7 @@ def getSoup(dir):
     content = f.read()
     f.close()
 
-    return BeautifulSoup("<xml>" + content + "</xml>", "xml")
+    return BeautifulSoup(content, "html.parser")
 
 def makePath(path):
     os.makedirs(path, exist_ok=True)

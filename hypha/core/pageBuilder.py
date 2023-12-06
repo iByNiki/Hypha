@@ -5,6 +5,9 @@ import json
 import cssutils
 from hypha.core.structures import *
 import dukpy
+import logging
+
+cssutils.log.setLevel(logging.FATAL)
 
 # TODO: CSS, scripts and config
 
@@ -25,13 +28,15 @@ class PageBuilder(object):
     
     def parseTemplate(self, template, scopePrefix, parentComponent=None):
 
+        foundComponents = []
+
         # CSS Scoping
         elements = template.find_all(class_=True)
         for element in elements:
             if (not element.has_attr("class")): continue
-            classListRaw = element["class"].split(" ")
+            classListRaw = element["class"]
             classList = []
-            initialName = element["class"]
+            initialName = " ".join(element["class"])
 
             toScope = 0
 
@@ -46,11 +51,13 @@ class PageBuilder(object):
             
             newClassName = " ".join(classList)
 
-            replaceElem = template.find(attrs={"class", element["class"]})
+            replaceElem = template.find(attrs={"class", " ".join(element["class"])})
             while (replaceElem != None and toScope > 0):
                 template.find(attrs={"class", initialName})["class"] = newClassName
                 
                 replaceElem = template.find(attrs={"class", initialName})
+            
+            element.attrs["h-id"] = scopePrefix # set element id for reference in js
 
         # Component replacement
         foundComponents = []
@@ -58,7 +65,7 @@ class PageBuilder(object):
         innerHTML = builder.getInnerHTML(template)
         matches = re.findall("<[a-zA-z]*.*/>", innerHTML)
 
-        componentList = [builder.dirName(p) for p in builder.getComponentPaths()]
+        componentList = [builder.dirName(p).lower() for p in builder.getComponentPaths()]
 
         for elem in template.findAll():
             processElem = False
@@ -67,7 +74,9 @@ class PageBuilder(object):
                 componentName = elem.name
 
                 foundComponents.append(componentName)
-                component = self.components[componentName]   
+                component = self.components[componentName]
+
+                foundComponents += component.requiredComponents
 
             elif (elem.name in componentList):
                 processElem = True
@@ -76,6 +85,8 @@ class PageBuilder(object):
                 foundComponents.append(componentName)
                 component = self.buildSingleComponent(builder.getSoup("components/" + componentName + ".php"), componentName)
                 self.components[componentName] = component
+
+                foundComponents += component.requiredComponents
 
             if (processElem):
                 newContent = component.content
@@ -139,8 +150,17 @@ class PageBuilder(object):
 
         for rule in sheet:
             if (rule.type != rule.STYLE_RULE):
+                if (rule.type == rule.MEDIA_RULE):
+                    for subrule in rule:
+                        for selector in subrule.selectorList:
+                            matches = re.findall("\\.[a-zA-z0-9_-]*", selector.selectorText)
+                            for match in matches:
+                                self.scopedClasses.append(match.lstrip("."))
+                                parsedMatch = "." + scopePrefix + "-" + match.lstrip(".")
+                                newText = selector.selectorText.replace(match, parsedMatch)
+                                selector._setSelectorText(newText)
                 continue
-            
+
             for selector in rule.selectorList:
                 matches = re.findall("\\.[a-zA-z0-9_-]*", selector.selectorText)
                 for match in matches:
@@ -157,6 +177,7 @@ class PageBuilder(object):
         code = ""
         defer = ("defer" in attrs)
         bundle = True
+        requires = []
 
         if ("bundle" in attrs):
             if (attrs["bundle"].lower() == "false" or attrs["bundle"].lower() == "f"):
@@ -168,14 +189,15 @@ class PageBuilder(object):
                     if (name.lower() == attrs["lang"].lower()):
                         lang = key
 
-        requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
+        if (scriptTag.string != None):
+            requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
         
-        if (lang == JSLang.VANILLA):
-            code = scriptTag.string
-        elif (lang == JSLang.COFFEE):
-            code = dukpy.coffee_compile(scriptTag.string)
-        elif (lang == JSLang.BABEL):
-            code = dukpy.babel_compile(scriptTag.string)["code"]
+            if (lang == JSLang.VANILLA):
+                code = scriptTag.string
+            elif (lang == JSLang.COFFEE):
+                code = dukpy.coffee_compile(scriptTag.string)
+            elif (lang == JSLang.BABEL):
+                code = dukpy.babel_compile(scriptTag.string)["code"]
 
         return Script(lang=lang, code=code, defer=defer, bundle=bundle, requires=requires)
     
@@ -206,7 +228,7 @@ class PageBuilder(object):
     def buildComponents(self):
         for componentPath in builder.getComponentPaths():
             soup = builder.getSoup(componentPath)
-            name = builder.dirName(componentPath)
+            name = builder.dirName(componentPath).lower()
 
             if (name not in self.components):
                 self.components[name] = self.buildSingleComponent(soup, name)
@@ -214,7 +236,7 @@ class PageBuilder(object):
     def buildDefaultComponents(self):
         for componentPath in builder.getDefaultComponentPaths():
             soup = builder.getSoup(componentPath)
-            name = builder.dirName(builder.dirName(componentPath))
+            name = builder.dirName(builder.dirName(componentPath)).lower()
 
             if (name not in self.components):
                 self.components[name] = self.buildSingleComponent(soup, name)
