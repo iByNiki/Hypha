@@ -1,9 +1,10 @@
 import hypha.core.builder as builder
+import hypha.core.builder as parser
+from hypha.core.structures import *
 from bs4 import BeautifulSoup
 import re
 import json
 import cssutils
-from hypha.core.structures import *
 import dukpy
 import logging
 
@@ -107,101 +108,9 @@ class PageBuilder(object):
 
                 innerHTML = innerHTML.replace(str(elem), newContent)
 
-
-        """for match in matches:
-            componentString = match.replace("<", "").replace("/>", "")
-            componentName = componentString.split(" ")[0]
-            rawAttribs = componentString.split(" ")[1:]
-            componentAttribs = {}
-            
-            for attrib in rawAttribs:
-                parsedValue = attrib.split("=")[1]
-                if (parsedValue[0] == '"' and parsedValue[-1] == '"'):
-                    parsedValue = parsedValue[1:len(parsedValue) - 1]
-                componentAttribs[attrib.split("=")[0]] = parsedValue
-
-            if (componentName == "slot"): continue
-
-            foundComponents.append(componentName)
-
-            if (componentName == parentComponent): # TODO: MAKE THIS CHECK WORK WTF
-                raise Exception("Component infinite loop? Between " + componentName + " and " + parentComponent)
-            
-            if (componentName not in self.components):
-                component = self.buildSingleComponent(builder.getSoup("components/" + componentName + ".php"), componentName)
-                self.components[componentName] = component
-            else:
-                component = self.components[componentName]
-
-            innerHTML = innerHTML.replace(match, component.content)"""
-
         innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
 
         return innerHTML, foundComponents
-
-    def parseCss(self, style, scopePrefix):
-
-        innerHTML = builder.getInnerHTML(style)
-        parser = cssutils.CSSParser()
-        sheet = parser.parseString(innerHTML)
-
-        if ("scoped" not in style.attrs):
-            return sheet.cssText.decode("utf-8")
-
-        for rule in sheet:
-            if (rule.type != rule.STYLE_RULE):
-                if (rule.type == rule.MEDIA_RULE):
-                    for subrule in rule:
-                        for selector in subrule.selectorList:
-                            matches = re.findall("\\.[a-zA-z0-9_-]*", selector.selectorText)
-                            for match in matches:
-                                self.scopedClasses.append(match.lstrip("."))
-                                parsedMatch = "." + scopePrefix + "-" + match.lstrip(".")
-                                newText = selector.selectorText.replace(match, parsedMatch)
-                                selector._setSelectorText(newText)
-                continue
-
-            for selector in rule.selectorList:
-                matches = re.findall("\\.[a-zA-z0-9_-]*", selector.selectorText)
-                for match in matches:
-                    self.scopedClasses.append(match.lstrip("."))
-                    parsedMatch = "." + scopePrefix + "-" + match.lstrip(".")
-                    newText = selector.selectorText.replace(match, parsedMatch)
-                    selector._setSelectorText(newText)
-
-        return sheet.cssText.decode("utf-8")
-    
-    def parseJS(self, scriptTag):
-        attrs = scriptTag.attrs
-        lang = JSLang.VANILLA
-        code = ""
-        defer = ("defer" in attrs)
-        bundle = True
-        requires = []
-
-        if ("bundle" in attrs):
-            if (attrs["bundle"].lower() == "false" or attrs["bundle"].lower() == "f"):
-                bundle = False
-
-        if ("lang" in attrs):
-            for key in JSLang:
-                for name in key.value:
-                    if (name.lower() == attrs["lang"].lower()):
-                        lang = key
-
-        if (scriptTag.string != None):
-            requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
-        
-            if (lang == JSLang.VANILLA):
-                code = scriptTag.string
-            elif (lang == JSLang.COFFEE):
-                code = dukpy.coffee_compile(scriptTag.string)
-            elif (lang == JSLang.BABEL):
-                code = dukpy.babel_compile(scriptTag.string)["code"]
-
-        return Script(lang=lang, code=code, defer=defer, bundle=bundle, requires=requires)
-    
-        # TODO: Render JS
 
     def buildSingleComponent(self, soup, name):
         templateElem = soup.find("template")
@@ -214,10 +123,10 @@ class PageBuilder(object):
         scopePrefix = "c" + str(len(self.components))
 
         for scriptElem in scriptElems:
-            component.scripts.append(self.parseJS(scriptElem))
+            component.scripts.append(parser.parseJS(scriptElem))
 
         if (styleElem != None):
-            component.css = self.parseCss(styleElem, scopePrefix)
+            component.css = parser.parseCss(styleElem, self.scopedClasses, scopePrefix)
 
         if (templateElem != None):
             component.content, component.requiredComponents = self.parseTemplate(templateElem, scopePrefix, parentComponent=name)
@@ -252,10 +161,10 @@ class PageBuilder(object):
         scopePrefix = "l" + str(len(self.layouts))
 
         for scriptElem in scriptElems:
-            layout.scripts.append(self.parseJS(scriptElem))
+            layout.scripts.append(parser.parseJS(scriptElem))
 
         if (styleElem != None):
-            layout.css = self.parseCss(styleElem, scopePrefix)
+            layout.css = parser.parseCss(styleElem, self.scopedClasses, scopePrefix)
 
         if (templateElem != None):
             layout.content, layout.requiredComponents = self.parseTemplate(templateElem, scopePrefix)
@@ -281,10 +190,10 @@ class PageBuilder(object):
         scopePrefix = "p" + str(len(self.pages))
 
         for scriptElem in scriptElems:
-            page.scripts.append(self.parseJS(scriptElem))
+            page.scripts.append(parser.parseJS(scriptElem))
 
         if (styleElem != None):
-            page.css = self.parseCss(styleElem, scopePrefix)
+            page.css = parser.parseCss(styleElem, self.scopedClasses, scopePrefix)
 
         if (templateElem != None):
             page.content, page.requiredComponents = self.parseTemplate(templateElem, scopePrefix)

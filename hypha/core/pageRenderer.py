@@ -21,13 +21,10 @@ class PageRenderer(object):
                 
         return finalCss
     
-    def renderSinglePage(self, page):
-        finalHTML = '<!DOCTYPE html><html lang="en">'
-        finalBody = "<body>"
-        finalHead = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">'
-        finalCss = ""
+    def renderHead(self, page):
 
-        # Head
+        rawHead = ""
+
         if (page.config != {} and "head" in page.config):
             headData = page.config["head"]
             for elem in headData:
@@ -41,12 +38,24 @@ class PageRenderer(object):
                 else:
                     attrs = ""
                 
-                finalHead += "<" + elem["type"].lower() + attrs + ">"
+                rawHead += "<" + elem["type"].lower() + attrs + ">"
 
                 if ("inner" in elem):
-                    finalHead += elem["inner"]
-                    finalHead += "</" + elem["type"].lower() + ">"
+                    rawHead += elem["inner"]
+                    rawHead += "</" + elem["type"].lower() + ">"
 
+        return rawHead
+
+    
+    
+    def renderSinglePage(self, page):
+        finalHTML = '<!DOCTYPE html><html lang="en">'
+        finalBody = "<body>"
+        finalHead = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">'
+        finalCss = ""
+
+        # Head
+        finalHead += self.renderHead(page)
         
         # Body
         if (page.layout != None):
@@ -87,8 +96,6 @@ class PageRenderer(object):
         jsLangDeps = []
 
         requiredComponents = page.requiredComponents
-
-        # TODO: Recursive JS Load
 
         if (page.layout != None):
             layout = self.pageBuilder.layouts[page.layout]
@@ -133,7 +140,6 @@ class PageRenderer(object):
             
             finalHead += ('<script src="/hjs/' + pagePath + '"' 
                           + (" defer" if unbundledScript.defer else "") 
-                          #+ (' type="systemjs-module"' if unbundledScript.lang == JSLang.TYPESCRIPT else "")
                           + '></script>')
 
         # TODO: DO MINIFICATION
