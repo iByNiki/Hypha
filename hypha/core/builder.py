@@ -1,8 +1,10 @@
-import os
+import hypha.core.plugins as plugins
 from hypha.core.pageBuilder import *
 from hypha.core.pageRenderer import *
 from hypha.core.routerBuilder import *
 from hypha.core.logging import *
+
+import os
 import shutil
 
 def walkPathFiles(path):
@@ -44,6 +46,9 @@ def getInnerHTML(elem):
     return "".join(str(x) for x in elem.contents)
 
 def build():
+
+    plugins.importPlugins()
+
     log("Building pages...")
     pageBuilder = PageBuilder()
     pageBuilder.build()

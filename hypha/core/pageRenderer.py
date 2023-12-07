@@ -1,6 +1,8 @@
 import hypha.core.builder as builder
-from css_html_js_minify import css_minify
+import hypha.core.plugins as plugins
+from css_html_js_minify import css_minify, html_minify
 from hypha.core.structures import *
+import cssutils
 
 class PageRenderer(object):
     def __init__(self, renderPath, pageBuilder):
@@ -23,52 +25,49 @@ class PageRenderer(object):
     
     def renderHead(self, page):
 
-        rawHead = ""
+        finalHead = HTMLElement("head")
+        finalHead.addChild(HTMLElement("meta", endTag=False, attribs=[HTMLAttribute("charset", "UTF-8")]))
+        finalHead.addChild(HTMLElement("meta", endTag=False, attribs=[
+            HTMLAttribute("name", "viewport"),
+            HTMLAttribute("content", "width=device-width, initial-scale=1.0")
+        ]))
 
         if (page.config != {} and "head" in page.config):
             headData = page.config["head"]
             for elem in headData:
-                attrStrings = []
+                elemObj = HTMLElement(elem["type"], endTag=("inner" in elem))
+                if ("inner" in elem):
+                    elemObj.innerHTML = elem["inner"]
+
                 for key in elem:
                     if (key.lower() != "type" and key.lower() != "inner"):
-                        attrStrings.append(key.lower() + '="' + elem[key] + '"')
+                        elemObj.attribs.append(HTMLAttribute(key.lower(), elem[key]))
+
+                finalHead.addChild(elemObj)
                 
-                if (len(attrStrings) > 0):
-                    attrs = " " + " ".join(attrStrings)
-                else:
-                    attrs = ""
-                
-                rawHead += "<" + elem["type"].lower() + attrs + ">"
 
-                if ("inner" in elem):
-                    rawHead += elem["inner"]
-                    rawHead += "</" + elem["type"].lower() + ">"
+        return finalHead
 
-        return rawHead
-
-    
-    
     def renderSinglePage(self, page):
-        finalHTML = '<!DOCTYPE html><html lang="en">'
-        finalBody = "<body>"
-        finalHead = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">'
+        finalHTML = HTMLElement("html", attribs=[HTMLAttribute("lang", "en")])
+        finalBody = HTMLElement("body")
         finalCss = ""
 
         # Head
-        finalHead += self.renderHead(page)
+        finalHead = self.renderHead(page)
         
         # Body
         if (page.layout != None):
             layout = self.pageBuilder.layouts[page.layout]
             layoutHTML = layout.content
-            finalBody += layoutHTML.replace("<slot></slot>", page.content)
+            finalBody.addChild(layoutHTML.replace("<slot></slot>", page.content))
             finalCss += layout.css
 
             for component in layout.requiredComponents:
                 finalCss += self.pageBuilder.components[component].css
 
         else:
-            finalBody += page.content
+            finalBody.addChild(page.content)
 
         # Css
         finalCss += page.css
@@ -80,11 +79,20 @@ class PageRenderer(object):
             layout = self.pageBuilder.layouts[page.layout]
             finalCss += layout.css
 
+        finalSheet = cssutils.parseString(finalCss)
+        finalSheet.encoding = "utf-8"
+
+        finalCss = plugins.executeOverwriteHook(plugins.Hooks.PAGE_CSS_RENDER, finalSheet, page).cssText.decode("utf-8")
+
         finalRawCss = finalCss
         finalCss = css_minify(finalCss)
 
         if (finalRawCss != ""):
-            finalHead += '<link rel="stylesheet" href="/hcss/' + page.name + '.css">'
+            finalHead.addChild(HTMLElement("link", endTag=False, attribs=[
+                HTMLAttribute("rel", "stylesheet"),
+                HTMLAttribute("href", "/hcss/" + page.name + ".css")
+            ]))
+
             builder.writeFile(self.cssPath + page.name + ".css", finalCss)
 
         # JS
@@ -128,34 +136,39 @@ class PageRenderer(object):
             for dep in unbundledScript.getLangDeps():
                 if (dep not in jsLangDeps): jsLangDeps.append(dep)
 
-        finalHead += '<script src="/hjs/hypha.js"></script>'
+        finalHead.addChild(HTMLElement("script", attribs=[HTMLAttribute("src", "/hjs/hypha.js")]))
 
         # Dependencies
         for dep in jsLangDeps:
-            finalHead += '<script src="/hjs/' + dep + '"></script>'
+            finalHead.addChild(HTMLElement("script", attribs=[HTMLAttribute("src", "/hjs/" + dep)]))
 
         for i, unbundledScript in enumerate(notBundled):
             pagePath = "unb/" + page.name + "/" + str(i) + ".js"
             builder.writeFile(self.jsPath + pagePath, unbundledScript.code)
-            
-            finalHead += ('<script src="/hjs/' + pagePath + '"' 
-                          + (" defer" if unbundledScript.defer else "") 
-                          + '></script>')
+
+            scriptElem = HTMLElement("script", attribs=[HTMLAttribute("src", "/hjs/" + pagePath)])
+            if (unbundledScript.defer): scriptElem.addAttrib(HTMLAttribute("defer", "", noValue=True))
+            finalHead.addChild(scriptElem)
 
         # TODO: DO MINIFICATION
         if (finalJs != ""):
             pagePath = page.name + "/bundle.js"
             builder.writeFile(self.jsPath + pagePath, finalJs)
-            finalHead += '<script src="/hjs/' + pagePath + '"></script>'
+            finalHead.addChild(HTMLElement("script", attribs=[HTMLAttribute("src", "/hjs/" + pagePath)]))
 
         if (deferredJs != ""):
             pagePath = page.name + "/bundle-def.js"
             builder.writeFile(self.jsPath + pagePath, deferredJs)
-            finalHead += '<script src="/hjs/' + pagePath + '" defer></script>'
+            finalHead.addChild(HTMLElement("script", attribs=[
+                HTMLAttribute("src", "/hjs/" + pagePath),
+                HTMLAttribute("defer", "", noValue=True)
+            ]))
 
-        finalHTML += finalHead + "</head>" + finalBody + "</body></html>"
+        finalHTML.addChild(finalHead)
+        finalHTML.addChild(finalBody)
+        #finalHTML = html_minify(finalHTML)
 
-        builder.writeFile(self.pagePath + page.name + ".php", finalHTML)
+        builder.writeFile(self.pagePath + page.name + ".php", "<!DOCTYPE html>" + str(finalHTML))
 
 
     def renderPages(self):

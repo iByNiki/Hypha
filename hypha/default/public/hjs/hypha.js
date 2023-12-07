@@ -115,6 +115,15 @@ hypha.getScopedClass = (element, className) => {
 
 }
 
+hypha.routeParams = {};
+hypha.addRouteParams = (params) => {
+
+    for (let i = 0; i < params.length; i++) {
+        hypha.routeParams[params[i][0]] = params[i][1];
+    }
+
+}
+
 /* HYPHA CLASS */
 
 window.addEventListener("load", (event) => {

@@ -1,4 +1,5 @@
 from enum import Enum
+from collections.abc import MutableSequence
 
 class Component(object):
     def __init__(self, name):
@@ -55,3 +56,41 @@ class Script(object):
             dep.append("scripts/" + require)
 
         return dep
+
+
+class HTMLAttribute(object):
+    def __init__(self, name: str, value, noValue=False):
+        self.name = name
+        self.value = str(value)
+        self.noValue = noValue
+    def __str__(self):
+        if (self.noValue):
+            return self.name
+        
+        return self.name + '="' + self.value + '"'
+
+class HTMLElement(object):
+    def __init__(self, type: str, innerHTML: str="", attribs: MutableSequence[HTMLAttribute]=[], endTag=True):
+        self.type = type.lower()
+        self.innerHTML = innerHTML
+
+        if (attribs == []):
+            self.attribs: MutableSequence[HTMLAttribute] = []
+        else:
+            self.attribs = attribs
+
+        self.children = []
+
+        self.endTag = endTag
+
+    def addChild(self, child):
+        self.children.append(child)
+    
+    def addAttrib(self, attrib):
+        self.attribs.append(attrib)
+
+    def getFullInnerHTML(self):
+        return "".join([str(child) for child in self.children]) + self.innerHTML
+
+    def __str__(self):
+        return "<" + self.type + (" " if len(self.attribs) > 0 else "") + " ".join([str(attrib) for attrib in self.attribs]) + ">" + self.getFullInnerHTML() + ("</" + self.type + ">" if self.endTag else "")
