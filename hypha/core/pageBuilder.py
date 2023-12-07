@@ -84,7 +84,7 @@ class PageBuilder(object):
                 componentName = elem.name
 
                 foundComponents.append(componentName)
-                component = self.buildSingleComponent(builder.getSoup("components/" + componentName + ".php"), componentName)
+                component = self.buildSingleComponent(builder.getSoup("components/" + componentName.replace(".", "/") + ".php"), componentName)
                 self.components[componentName] = component
 
                 foundComponents += component.requiredComponents
@@ -107,6 +107,13 @@ class PageBuilder(object):
                 newContent = newContent.replace("<slot></slot>", processedSlot)
 
                 innerHTML = innerHTML.replace(str(elem), newContent)
+
+        # Route URL parameters
+        argMatches = re.findall("\[\[.*?\]\]", innerHTML)
+        for argMatch in argMatches:
+            innerHTML = innerHTML.replace(
+                argMatch,
+                '<?php echo $request["params"]["' + argMatch[2:-2] + '"] ?>')
 
         innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
 
@@ -137,7 +144,7 @@ class PageBuilder(object):
     def buildComponents(self):
         for componentPath in builder.getComponentPaths():
             soup = builder.getSoup(componentPath)
-            name = builder.dirName(componentPath).lower()
+            name = builder.dirName(componentPath).lower().replace("/", ".").replace("\\", ".")
 
             if (name not in self.components):
                 self.components[name] = self.buildSingleComponent(soup, name)

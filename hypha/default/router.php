@@ -4,6 +4,8 @@ include("filetypes.php");
 
 class Router {
 
+    private $PARAM_REGEX = "/\[.*\]/i";
+
     private $urls = array();
     private $paths = array();
 
@@ -20,12 +22,41 @@ class Router {
 
         $requestUrl = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
 	    $requestUrl = strtok($requestUrl, "?");
+        $explodedUrl = explode("/", $requestUrl);
 
         $found = false;
 
         foreach ($this->urls as $key => $value) {
-            if (preg_match("#^$value$#", $requestUrl)) {
-                $this->route($this->paths[$key]);
+            $params = array(); // Clear params
+
+            if (preg_match($this->PARAM_REGEX, $value)) {
+
+                $explodedVal = explode("/", $value);
+                if (count($explodedVal) == count($explodedUrl)) {
+                    foreach ($explodedVal as $expKey => $expValue) {
+                        if (!(str_starts_with($expValue, "[") && str_ends_with($expValue, "]")))
+                            continue;
+
+                        $paramName = substr($expValue, 1, -1);
+                        $params[$paramName] = $explodedUrl[$expKey];
+                        $explodedUrl[$expKey] = $expValue;
+                        $newUrl = implode("/", $explodedUrl);
+                        $args = array(
+                            "params" => $params
+                        );
+
+                        if ($newUrl == $value) {
+                            $this->route($this->paths[$key], $args);
+                            $found = true;
+                        }
+
+                    }
+                }
+
+            }
+
+            if ($requestUrl == $value && !$found) {
+                $this->route($this->paths[$key], array());
                 $found = true;
             }
         }
@@ -54,7 +85,7 @@ class Router {
         if (!$found) {
             header("HTTP/1.0 404 Not Found");
             if (in_array("/404", $this->urls)) {
-                $this->route($this->paths[array_search("404", $this->urls)]);
+                $this->route($this->paths[array_search("404", $this->urls)], array());
             } else {
                 echo "<h1>404</h1>";
                 echo "</p>Page not found<p>";
@@ -64,7 +95,7 @@ class Router {
         
     }
 
-    public function route($path) {
+    public function route($path, $request) {
         include_once __DIR__ . "$path";
     }
 
