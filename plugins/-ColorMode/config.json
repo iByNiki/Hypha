@@ -1,0 +1,34 @@
+{
+
+    "default": "dark",
+    "systemDefault": true,
+
+    "variables": [
+        {
+            "name": "text",
+            "dark": "#EAF0EC",
+            "light": "#0F1511"
+        },
+        {
+            "name": "background",
+            "dark": "#0D0D0D",
+            "light": "#F2F2F2"
+        },
+        {
+            "name": "primary",
+            "dark": "#68974E",
+            "light": "#81B168"
+        },
+        {
+            "name": "secondary",
+            "dark": "#386641",
+            "light": "#99C7A2"
+        },
+        {
+            "name": "accent",
+            "dark": "#A6C856",
+            "light": "#87A937"
+        }
+    ]
+
+}

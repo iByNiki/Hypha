@@ -1,5 +1,6 @@
 from enum import Enum
 from collections.abc import MutableSequence
+import dukpy
 
 class Component(object):
     def __init__(self, name):
@@ -56,6 +57,16 @@ class Script(object):
             dep.append("scripts/" + require)
 
         return dep
+    
+    def getCompiledCode(self):
+        if (self.lang == JSLang.VANILLA):
+            return self.code
+        elif (self.lang == JSLang.COFFEE):
+            return dukpy.coffee_compile(self.code)
+        elif (self.lang == JSLang.BABEL):
+            return dukpy.babel_compile(self.code)["code"]
+        
+        return self.code
 
 
 class HTMLAttribute(object):

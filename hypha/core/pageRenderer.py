@@ -105,6 +105,7 @@ class PageRenderer(object):
 
         requiredComponents = page.requiredComponents
 
+        # Add scripts to list
         if (page.layout != None):
             layout = self.pageBuilder.layouts[page.layout]
             for script in layout.scripts:
@@ -122,15 +123,19 @@ class PageRenderer(object):
                 if (script.bundle): bundled.append(script)
                 else: notBundled.append(script)
 
+        bundled = plugins.executeOverwriteHook(plugins.Hooks.PAGE_JS_RENDER_BUNDLED, bundled, page)
+        notBundled = plugins.executeOverwriteHook(plugins.Hooks.PAGE_JS_RENDER_NONBUNDLED, notBundled, page)
+
+        # Process
         for bundledScript in bundled:
 
             for dep in bundledScript.getLangDeps():
                 if (dep not in jsLangDeps): jsLangDeps.append(dep)
 
             if (bundledScript.defer):
-                deferredJs += bundledScript.code
+                deferredJs += bundledScript.getCompiledCode()
             else:
-                finalJs += bundledScript.code
+                finalJs += bundledScript.getCompiledCode()
 
         for unbundledScript in notBundled:
             for dep in unbundledScript.getLangDeps():
@@ -144,7 +149,7 @@ class PageRenderer(object):
 
         for i, unbundledScript in enumerate(notBundled):
             pagePath = "unb/" + page.name + "/" + str(i) + ".js"
-            builder.writeFile(self.jsPath + pagePath, unbundledScript.code)
+            builder.writeFile(self.jsPath + pagePath, unbundledScript.getCompiledCode())
 
             scriptElem = HTMLElement("script", attribs=[HTMLAttribute("src", "/hjs/" + pagePath)])
             if (unbundledScript.defer): scriptElem.addAttrib(HTMLAttribute("defer", "", noValue=True))
@@ -164,9 +169,14 @@ class PageRenderer(object):
                 HTMLAttribute("defer", "", noValue=True)
             ]))
 
+        finalHead = plugins.executeOverwriteHook(plugins.Hooks.PAGE_HEAD_RENDER, finalHead, page)
+        finalBody = plugins.executeOverwriteHook(plugins.Hooks.PAGE_BODY_RENDER, finalBody, page)
+
         finalHTML.addChild(finalHead)
         finalHTML.addChild(finalBody)
         #finalHTML = html_minify(finalHTML)
+
+        finalHTML = plugins.executeOverwriteHook(plugins.Hooks.PAGE_FULL_RENDER, finalHTML, page)
 
         builder.writeFile(self.pagePath + page.name + ".php", "<!DOCTYPE html>" + str(finalHTML))
 

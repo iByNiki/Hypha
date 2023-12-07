@@ -56,12 +56,6 @@ def parseJS(scriptTag):
 
     if (scriptTag.string != None):
         requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
-    
-        if (lang == JSLang.VANILLA):
-            code = scriptTag.string
-        elif (lang == JSLang.COFFEE):
-            code = dukpy.coffee_compile(scriptTag.string)
-        elif (lang == JSLang.BABEL):
-            code = dukpy.babel_compile(scriptTag.string)["code"]
+        code = scriptTag.string
 
     return Script(lang=lang, code=code, defer=defer, bundle=bundle, requires=requires)

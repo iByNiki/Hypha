@@ -45,9 +45,10 @@ def writeFile(path, data):
 def getInnerHTML(elem):
     return "".join(str(x) for x in elem.contents)
 
-def build():
-
+def buildInit():
     plugins.importPlugins()
+
+def build():
 
     log("Building pages...")
     pageBuilder = PageBuilder()
