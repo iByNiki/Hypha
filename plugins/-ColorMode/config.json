@@ -15,14 +15,39 @@
             "light": "#F2F2F2"
         },
         {
+            "name": "bg-accent",
+            "dark": "#151515",
+            "light": "#c9c7c7"
+        },
+        {
+            "name": "bg-accent-2",
+            "dark": "#282828",
+            "light": "#282828"
+        },
+        {
             "name": "primary",
             "dark": "#68974E",
             "light": "#81B168"
         },
         {
+            "name": "primary30",
+            "dark": "rgba(104, 151, 78, .3)",
+            "light": "rgba(129, 177, 104, .3)"
+        },
+        {
+            "name": "primary30solid",
+            "dark": "#283621",
+            "light": "#283621"
+        },
+        {
             "name": "secondary",
             "dark": "#386641",
             "light": "#99C7A2"
+        },
+        {
+            "name": "secondary30",
+            "dark": "rgba(56, 102, 65, .3)",
+            "light": "rgba(153, 199, 162, .3)"
         },
         {
             "name": "accent",

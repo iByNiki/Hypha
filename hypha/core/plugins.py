@@ -48,7 +48,11 @@ def executeHook(hook, *args):
     for plugin in plugins:
         if (hook not in plugin.hooks):
             continue
-        plugin.hooks[hook](args)
+
+        if (len(args) == 0):
+            plugin.hooks[hook]()
+        else:
+            plugin.hooks[hook](args)
 
 def executeOverwriteHook(hook, initialVal, *args):
     res = initialVal
@@ -76,6 +80,7 @@ class Hooks(Enum):
     PAGE_JS_RENDER_BUNDLED = 3
     PAGE_JS_RENDER_NONBUNDLED = 4
     PAGE_FULL_RENDER = 5
+    RENDER_START = 6
 
 class Plugin(object):
 

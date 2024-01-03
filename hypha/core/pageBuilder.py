@@ -66,21 +66,22 @@ class PageBuilder(object):
         componentList = [builder.dirName(p).lower() for p in builder.getComponentPaths()]
 
         for elem in template.findAll():
+            componentName = elem.name.replace(".", "/")
+
             processElem = False
-            if (elem.name in self.components):
+            if (componentName in self.components):
                 processElem = True
-                componentName = elem.name
 
                 foundComponents.append(componentName)
                 component = self.components[componentName]
 
                 foundComponents += component.requiredComponents
 
-            elif (elem.name in componentList):
+            elif (componentName in componentList):
                 processElem = True
-                componentName = elem.name
 
                 foundComponents.append(componentName)
+
                 component = self.buildSingleComponent(builder.getSoup("components/" + componentName.replace(".", "/") + ".php"), componentName)
                 self.components[componentName] = component
 
@@ -114,7 +115,7 @@ class PageBuilder(object):
 
         if (len(argMatches) > 0):
             jsArgArray = "[" + ",".join(['["' + argMatch[2:-2] +'", "<?php echo $request["params"]["' + argMatch[2:-2] + '"] ?>"]' for match in argMatches]) + "]"
-            innerHTML += '<script>hypha.addRouteParams(' + jsArgArray + ')</script>'            
+            innerHTML += '<script>hypha.addRouteParams(' + jsArgArray + ')</script>'
 
         innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
 
@@ -167,6 +168,10 @@ class PageBuilder(object):
         layout = Layout(name)
 
         scopePrefix = "l" + str(len(self.layouts))
+
+        if (configElem != None):
+            parsedConfig = self.parseConfig(builder.getInnerHTML(configElem))
+            layout.config = parsedConfig
 
         for scriptElem in scriptElems:
             layout.scripts.append(parser.parseJS(scriptElem))

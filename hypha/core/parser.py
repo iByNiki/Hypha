@@ -36,6 +36,21 @@ def parseCss(style, scopedClasses, scopePrefix):
 
     return sheet.cssText.decode("utf-8")
 
+def getRequiresRecursively(scriptCode):
+
+    requires = re.findall("""require\(["|'](.*)["|']\)""", scriptCode)
+
+    for require in requires:
+        f = open("scripts/" + require + ".js")
+        data = f.read()
+        f.close()
+
+        newReqs = getRequiresRecursively(data)
+        for newReq in newReqs:
+            if (newReq not in requires): requires.append(newReq)
+
+    return requires
+
 def parseJS(scriptTag):
     attrs = scriptTag.attrs
     lang = JSLang.VANILLA
@@ -55,7 +70,7 @@ def parseJS(scriptTag):
                     lang = key
 
     if (scriptTag.string != None):
-        requires = re.findall("""require\(["|'].*["|']\)""", scriptTag.string)
+        requires = getRequiresRecursively(scriptTag.string)
         code = scriptTag.string
 
     return Script(lang=lang, code=code, defer=defer, bundle=bundle, requires=requires)

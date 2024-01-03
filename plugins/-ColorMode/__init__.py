@@ -69,6 +69,7 @@ class ColorMode(plugins.Plugin):
         return pageScripts
 
     def onPageFullRender(self, pageHtml, page):
+
         pageHtml.addAttrib(HTMLAttribute("data-theme", "<?php echo (isset($_COOKIE['colormode']) ? $_COOKIE['colormode'] : '" + self.config["default"] + "'); ?>"))
         return pageHtml
     

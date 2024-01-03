@@ -11,11 +11,12 @@ hypha.loadPage = (url) => {
 
         if (xhr.status != 200) return;
 
+        window.history.pushState({"html": xhr.response.html}, "", url);
+
         document.open();
         document.write(xhr.response);
         document.close();
 
-        window.history.pushState({"html": xhr.response.html}, "", url);
         var loadEvent = new CustomEvent("hyphaLoad");
         document.dispatchEvent(loadEvent);
 

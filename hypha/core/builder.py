@@ -28,7 +28,7 @@ def dirName(path):
 
 def getSoup(dir):
     f = open(dir, "r")
-    content = f.read()
+    content = f.read().replace("<?php", "<!--<?php").replace("?>", "?>-->")
     f.close()
 
     return BeautifulSoup(content, "html.parser")
@@ -66,6 +66,7 @@ def build():
     shutil.copytree("scripts", "tmp/public/hjs/scripts", dirs_exist_ok=True)
 
     log("Rendering pages...")
+    plugins.executeHook(plugins.Hooks.RENDER_START)
     pageRenderer = PageRenderer("tmp", pageBuilder)
     pageRenderer.render()
 

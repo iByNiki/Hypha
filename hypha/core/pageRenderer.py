@@ -35,12 +35,12 @@ class PageRenderer(object):
         if (page.config != {} and "head" in page.config):
             headData = page.config["head"]
             for elem in headData:
-                elemObj = HTMLElement(elem["type"], endTag=("inner" in elem))
+                elemObj = HTMLElement(elem["elemType"], endTag=("inner" in elem))
                 if ("inner" in elem):
                     elemObj.innerHTML = elem["inner"]
 
                 for key in elem:
-                    if (key.lower() != "type" and key.lower() != "inner"):
+                    if (key.lower() != "elemType" and key.lower() != "inner"):
                         elemObj.attribs.append(HTMLAttribute(key.lower(), elem[key]))
 
                 finalHead.addChild(elemObj)
@@ -177,8 +177,9 @@ class PageRenderer(object):
         #finalHTML = html_minify(finalHTML)
 
         finalHTML = plugins.executeOverwriteHook(plugins.Hooks.PAGE_FULL_RENDER, finalHTML, page)
+        finalHTMLString = str(finalHTML).replace("&gt;", ">").replace("<!--<?php", "<?php").replace("?>-->", "?>")
 
-        builder.writeFile(self.pagePath + page.name + ".php", "<!DOCTYPE html>" + str(finalHTML))
+        builder.writeFile(self.pagePath + page.name + ".php", "<!DOCTYPE html>" + finalHTMLString)
 
 
     def renderPages(self):
