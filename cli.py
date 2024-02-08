@@ -92,10 +92,12 @@ def startDevServer():
         os._exit(1)
 
 def build():
+    builder.buildInit()
     builder.build()
 
 def dev():
     downloadPHP()
+    builder.buildInit()
     builder.build()
     startDevServer()
 

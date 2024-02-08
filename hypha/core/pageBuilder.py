@@ -117,7 +117,9 @@ class PageBuilder(object):
             jsArgArray = "[" + ",".join(['["' + argMatch[2:-2] +'", "<?php echo $request["params"]["' + argMatch[2:-2] + '"] ?>"]' for match in argMatches]) + "]"
             innerHTML += '<script>hypha.addRouteParams(' + jsArgArray + ')</script>'
 
+        innerHTML = innerHTML.replace("<?php", "<!--<?php").replace("?>", "?>-->")
         innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
+        innerHTML = innerHTML.replace("<!--<?php", "<?php").replace("?>-->", "?>")
 
         return innerHTML, foundComponents
 

@@ -178,6 +178,7 @@ class PageRenderer(object):
 
         finalHTML = plugins.executeOverwriteHook(plugins.Hooks.PAGE_FULL_RENDER, finalHTML, page)
         finalHTMLString = str(finalHTML).replace("&gt;", ">").replace("<!--<?php", "<?php").replace("?>-->", "?>")
+        finalHTMLString = finalHTMLString.replace("&lt;!--&lt;?php", "<?php")
 
         builder.writeFile(self.pagePath + page.name + ".php", "<!DOCTYPE html>" + finalHTMLString)
 

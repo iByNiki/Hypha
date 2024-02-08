@@ -25,7 +25,7 @@ def md5_update_from_dir(directory: Union[str, Path], hash: Hash) -> Hash:
         hash.update(path.name.encode())
         if path.is_file():
             hash = md5_update_from_file(path, hash)
-        elif path.is_dir():
+        elif path.is_dir() and "__pycache__" not in str(path):
             hash = md5_update_from_dir(path, hash)
     return hash
 
