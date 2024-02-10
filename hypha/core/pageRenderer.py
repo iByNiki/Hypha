@@ -40,7 +40,7 @@ class PageRenderer(object):
                     elemObj.innerHTML = elem["inner"]
 
                 for key in elem:
-                    if (key.lower() != "elemType" and key.lower() != "inner"):
+                    if (key.lower() != "elemtype" and key.lower() != "inner"):
                         elemObj.attribs.append(HTMLAttribute(key.lower(), elem[key]))
 
                 finalHead.addChild(elemObj)
