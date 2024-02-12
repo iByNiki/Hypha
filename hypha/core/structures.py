@@ -44,10 +44,14 @@ class Script(object):
         self.code = code
         self.bundle = bundle
         self.requires = requires
+
+        self.langDepCache = []
+        self.compiledCache = ""
     def getLangDeps(self):
+
+        if (self.langDepCache != []): return self.langDepCache
+
         dep = []
-        #if (self.lang == JSLang.TYPESCRIPT):
-            #dep.append("dep/system.js")
         if (self.lang == JSLang.BABEL):
             dep.append("dep/babel-polyfill.js")
 
@@ -56,15 +60,21 @@ class Script(object):
                 require += ".js"
             dep.append("scripts/" + require)
 
-        return dep
+        self.langDepCache = dep
+        return self.langDepCache
     
     def getCompiledCode(self):
+        if (self.compiledCache != ""): return self.compiledCache
+
         if (self.lang == JSLang.VANILLA):
+            self.compiledCache = self.code
             return self.code
         elif (self.lang == JSLang.COFFEE):
-            return dukpy.coffee_compile(self.code)
+            self.compiledCache = dukpy.coffee_compile(self.code)
+            return self.compiledCache
         elif (self.lang == JSLang.BABEL):
-            return dukpy.babel_compile(self.code)["code"]
+            self.compiledCache = dukpy.babel_compile(self.code)["code"]
+            return self.compiledCache
         
         return self.code
 
