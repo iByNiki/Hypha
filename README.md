@@ -22,7 +22,7 @@ python3 cli.py dev
 ### &lt;script>
 ### &lt;style>
 
-### Plugins
-### Scripts Folder
+## Plugins
+## Scripts Folder
 
-### Replaceables
+## Replaceables

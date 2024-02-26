@@ -38,7 +38,7 @@ def parseCss(style, scopedClasses, scopePrefix):
 
 def getRequiresRecursively(scriptCode):
 
-    requires = re.findall("""require\(["|'](.*)["|']\)""", scriptCode)
+    requires = re.findall("""require\(["'](.*)["']\)""", scriptCode)
 
     for require in requires:
         f = open("scripts/" + require + ".js")
