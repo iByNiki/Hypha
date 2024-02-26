@@ -86,10 +86,6 @@ class Plugin(object):
 
     def __init__(self):
         self.hooks = {}
-        self.init()
-
-    def init(self):
-        pass
 
     def onRegister(self):
         pass
