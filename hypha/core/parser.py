@@ -3,6 +3,7 @@ from hypha.core.structures import *
 import cssutils
 import dukpy
 import re
+from logging import *
 
 def parseCss(style, scopedClasses, scopePrefix):
 
@@ -41,9 +42,14 @@ def getRequiresRecursively(scriptCode):
     requires = re.findall("""require\(["'](.*)["']\)""", scriptCode)
 
     for require in requires:
-        f = open("scripts/" + require + ".js")
-        data = f.read()
-        f.close()
+
+        try:
+            f = open("scripts/" + require + ".js")
+            data = f.read()
+            f.close()
+        except:
+            error("Required script " + require + "does not exist in 'scripts/'")
+            continue          
 
         newReqs = getRequiresRecursively(data)
         for newReq in newReqs:
