@@ -81,15 +81,13 @@ class Hooks(Enum):
     PAGE_JS_RENDER_NONBUNDLED = 4
     PAGE_FULL_RENDER = 5
     RENDER_START = 6
+    PRE_PAGE_HEAD_RENDER = 7
+    PRE_PAGE_FULL_RENDER = 8
 
 class Plugin(object):
 
     def __init__(self):
         self.hooks = {}
-        self.init()
-
-    def init(self):
-        pass
 
     def onRegister(self):
         pass

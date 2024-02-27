@@ -7,7 +7,9 @@ import cssutils
 
 class ColorMode(plugins.Plugin):
 
-    def init(self):
+    def __init__(self):
+        super().__init__()
+
         self.NAME = "ColorMode"
         self.DEPENDENCIES = ["NPM"]
 

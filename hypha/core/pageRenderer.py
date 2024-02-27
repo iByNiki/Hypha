@@ -32,6 +32,8 @@ class PageRenderer(object):
             HTMLAttribute("content", "width=device-width, initial-scale=1.0")
         ]))
 
+        finalHead = plugins.executeOverwriteHook(plugins.Hooks.PRE_PAGE_HEAD_RENDER, finalHead, page)
+
         if (page.config != {} and "head" in page.config):
             headData = page.config["head"]
             for elem in headData:
@@ -60,6 +62,9 @@ class PageRenderer(object):
         finalHead = self.renderHead(page)
         
         # Body
+        
+        page = plugins.executeOverwriteHook(plugins.Hooks.PRE_PAGE_FULL_RENDER, page)
+
         if (page.layout != None):
             layout = self.pageBuilder.layouts[page.layout]
             layoutHTML = layout.content

@@ -3,7 +3,9 @@ from hypha.core.logging import *
 from hypha.core.structures import *
 
 class AngularJS(plugins.Plugin):
-    def init(self):
+    def __init__(self):
+        super().__init__()
+        
         self.NAME = "AngularJS"
         self.DEPENDENCIES = ["NPM"]
     

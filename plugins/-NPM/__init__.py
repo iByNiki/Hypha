@@ -6,7 +6,9 @@ import os
 import shutil
 
 class NPM(plugins.Plugin):
-    def init(self):
+    def __init__(self):
+        super().__init__()
+        
         self.NAME = "NPM"
 
         self.APIURL = "https://cdn.jsdelivr.net/npm/"
