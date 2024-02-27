@@ -44,7 +44,10 @@ class PageRenderer(object):
                         elemObj.attribs.append(HTMLAttribute(key.lower(), elem[key]))
 
                 finalHead.addChild(elemObj)
-                
+
+        layout = self.pageBuilder.layouts[page.layout]
+        finalHead.innerHTML = layout.head
+        finalHead.innerHTML += page.head
 
         return finalHead
 

@@ -21,6 +21,7 @@ class Page(object):
         self.layout = None
         self.requiredComponents = []
         self.scripts = []
+        self.head = ""
 
 class Layout(object):
     def __init__(self, name):
@@ -30,6 +31,7 @@ class Layout(object):
         self.config = {}
         self.requiredComponents = []
         self.scripts = []
+        self.head = ""
 
 class JSLang(Enum):
     VANILLA = []
