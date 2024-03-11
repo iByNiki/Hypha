@@ -121,6 +121,8 @@ class PageBuilder(object):
         innerHTML = str(BeautifulSoup(innerHTML, "html.parser"))
         innerHTML = innerHTML.replace("<!--<?php", "<?php").replace("?>-->", "?>")
 
+        foundComponents = list(set(foundComponents))
+
         return innerHTML, foundComponents
 
     def buildSingleComponent(self, soup, name):
