@@ -32,10 +32,13 @@ class Router {
             if (preg_match($this->PARAM_REGEX, $value)) {
 
                 $explodedVal = explode("/", $value);
+                
                 if (count($explodedVal) == count($explodedUrl)) {
                     foreach ($explodedVal as $expKey => $expValue) {
-                        if (!(str_starts_with($expValue, "[") && str_ends_with($expValue, "]")))
+                        if (!(str_starts_with($expValue, "[") && str_ends_with($expValue, "]"))) {
+                            if ($explodedUrl[$expKey] != $explodedVal[$expKey]) break;
                             continue;
+                        }
 
                         $paramName = substr($expValue, 1, -1);
                         $params[$paramName] = $explodedUrl[$expKey];
