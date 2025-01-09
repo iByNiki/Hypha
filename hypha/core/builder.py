@@ -27,7 +27,7 @@ def dirName(path):
     return os.path.splitext("/".join(path.strip("/").split('/')[1:]))[0].replace(os.sep, '/')
 
 def getSoup(dir):
-    f = open(dir, "r")
+    f = open(dir, "r", encoding="utf-8")
     content = f.read().replace("<?php", "<!--<?php").replace("?>", "?>-->")
     f.close()
 
@@ -38,7 +38,7 @@ def makePath(path):
 
 def writeFile(path, data):
     if (not os.path.exists(os.path.dirname(path))): makePath(os.path.dirname(path))
-    f = open(path, "w+")
+    f = open(path, "w+", encoding="utf-8")
     f.write(data)
     f.close()
 

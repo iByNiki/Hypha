@@ -120,7 +120,7 @@ hypha.routeParams = {};
 hypha.addRouteParams = (params) => {
 
     for (let i = 0; i < params.length; i++) {
-        hypha.routeParams[params[i][0]] = params[i][1];
+        hypha.routeParams[params[i][0]] = params[i][1].replace("/", "");
     }
 
 }

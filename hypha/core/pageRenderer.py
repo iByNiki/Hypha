@@ -54,6 +54,12 @@ class PageRenderer(object):
         return finalHead
 
     def renderSinglePage(self, page):
+        
+        if ("rawPage" in page.config and page.config["rawPage"]):
+            page.content = page.content.removeprefix("\n")
+            builder.writeFile(self.pagePath + page.name + ".php", page.content)
+            return
+
         finalHTML = HTMLElement("html", attribs=[HTMLAttribute("lang", "en")])
         finalBody = HTMLElement("body")
         finalCss = ""

@@ -22,6 +22,8 @@ class Router {
 
         $requestUrl = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
 	    $requestUrl = strtok($requestUrl, "?");
+
+        if ($requestUrl != "/") $requestUrl = rtrim($requestUrl, "/");
         $explodedUrl = explode("/", $requestUrl);
 
         $found = false;
@@ -44,6 +46,7 @@ class Router {
                         $params[$paramName] = $explodedUrl[$expKey];
                         $explodedUrl[$expKey] = $expValue;
                         $newUrl = implode("/", $explodedUrl);
+
                         $args = array(
                             "params" => $params
                         );
@@ -51,6 +54,7 @@ class Router {
                         if ($newUrl == $value) {
                             $this->route($this->paths[$key], $args);
                             $found = true;
+                            break;
                         }
 
                     }
@@ -61,6 +65,7 @@ class Router {
             if ($requestUrl == $value && !$found) {
                 $this->route($this->paths[$key], array());
                 $found = true;
+                break;
             }
         }
 
