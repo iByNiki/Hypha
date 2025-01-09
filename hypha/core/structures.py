@@ -1,5 +1,5 @@
 from enum import Enum
-from collections.abc import MutableSequence
+from typing import MutableSequence
 import dukpy
 
 class Component(object):
